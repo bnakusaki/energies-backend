@@ -6,7 +6,8 @@ from . import model
 def index(request):
     # Extract the 'value' parameter from the GET request
     value = request.GET.get('value', None)
-    
+    print(value)
+
     if value is not None:
         prediction = model.predict(value)  # Assuming model has a predict function
         return HttpResponse(prediction)
