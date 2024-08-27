@@ -57,14 +57,14 @@ def predict(value):
     print(f'Mean Squared Error: {mse}')
     print(f'R-squared: {r2}')
 
-    # Optional: Plotting actual vs predicted values
-    plt.figure(figsize=(10, 6))
-    plt.scatter(y_test, y_pred, alpha=0.7)
-    plt.plot([y.min(), y.max()], [y.min(), y.max()], '--r')
-    plt.xlabel('Actual Unit Cost')
-    plt.ylabel('Predicted Unit Cost')
-    plt.title('Actual vs Predicted Unit Cost of Electricity')
-    plt.show()
+    # # Optional: Plotting actual vs predicted values
+    # plt.figure(figsize=(10, 6))
+    # plt.scatter(y_test, y_pred, alpha=0.7)
+    # plt.plot([y.min(), y.max()], [y.min(), y.max()], '--r')
+    # plt.xlabel('Actual Unit Cost')
+    # plt.ylabel('Predicted Unit Cost')
+    # plt.title('Actual vs Predicted Unit Cost of Electricity')
+    # plt.show()
 
     # Save the model
     joblib.dump(model, 'electricity_cost_model.pkl')
@@ -82,3 +82,4 @@ def predict(value):
     predicted_cost = loaded_model.predict(new_consumption_scaled)
 
     print(f'Predicted Unit Cost for {new_consumption[0][0]} kWh: {predicted_cost[0]}')
+    return new_consumption[0][0]

@@ -1,15 +1,29 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from . import model
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from . import model  # Assuming model is a module in the same directory
 
-# Create your views here.
+@csrf_exempt
 def index(request):
-    # Extract the 'value' parameter from the GET request
-    value = request.GET.get('value', None)
-    print(value)
+    if request.method == 'POST':
+        try:
+            # Parse the JSON body of the request
+            data = json.loads(request.body)
+            number = float(data.get('number'))
 
-    if value is not None:
-        prediction = model.predict(value)  # Assuming model has a predict function
-        return HttpResponse(prediction)
+            # Call the predict function with the extracted number
+            prediction = model.predict(number)
+
+            # Return the prediction as a JSON response
+            return JsonResponse({'prediction': prediction})
+        except (ValueError, TypeError) as e:
+            # Print the error for debugging
+            print(f"Error: {e}")
+            return JsonResponse({'error': 'Invalid input'}, status=400)
+        except json.JSONDecodeError as e:
+            # Handle JSON parsing errors
+            print(f"JSON Decode Error: {e}")
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
     else:
-        return HttpResponse("No value provided.")
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
