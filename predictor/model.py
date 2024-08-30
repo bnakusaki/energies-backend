@@ -13,19 +13,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
 import joblib
 
-# Load and preprocess the data once
-def load_and_preprocess_data(file_path='electricity_consumed1.csv'):
+def predict(value):
     # Load the dataset
-    data = pd.read_csv(file_path)
+    data = pd.read_csv('electricity_consumed1.csv')
 
-    # Drop rows with missing values
+    # Display the first few rows of the dataset
+    print(data.head())
+
+    # Check for missing values
+    print(data.isnull().sum())
+
+    # Fill or drop missing values (example: drop rows with missing values)
     data.dropna(inplace=True)
 
     # Separate features and target variable
-    X = data[['ElectricityConsumed']]
-    y = data['Cost']
+    X = data[['ElectricityConsumed']]  # Only using 'electricity_consumed' as input
+    y = data['Cost']  # Target variable
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -35,35 +41,45 @@ def load_and_preprocess_data(file_path='electricity_consumed1.csv'):
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    return X_train_scaled, X_test_scaled, y_train, y_test, scaler
-
-# Train the model once and save it
-def train_and_save_model(X_train, y_train, model_path='electricity_cost_model.pkl'):
+    # Initialize the Random Forest Regressor
     model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-    joblib.dump(model, model_path)
 
-# Load the model and make predictions
-def load_model_and_predict(value, model_path='electricity_cost_model.pkl', scaler=None):
-    loaded_model = joblib.load(model_path)
+    # Train the model
+    model.fit(X_train_scaled, y_train)
+
+    # Make predictions
+    y_pred = model.predict(X_test_scaled)
+
+    # Evaluate the model
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    print(f'Mean Squared Error: {mse}')
+    print(f'R-squared: {r2}')
+
+    # # Optional: Plotting actual vs predicted values
+    # plt.figure(figsize=(10, 6))
+    # plt.scatter(y_test, y_pred, alpha=0.7)
+    # plt.plot([y.min(), y.max()], [y.min(), y.max()], '--r')
+    # plt.xlabel('Actual Unit Cost')
+    # plt.ylabel('Predicted Unit Cost')
+    # plt.title('Actual vs Predicted Unit Cost of Electricity')
+    # plt.show()
+
+    # Save the model
+    joblib.dump(model, 'electricity_cost_model.pkl')
+
+    # Load the model later for predictions
+    loaded_model = joblib.load('electricity_cost_model.pkl')
+
+    # Example electricity consumption value
+    new_consumption = np.array([[value]])  # Replace 250 with the desired kWh value
 
     # Scale the input
-    new_consumption = np.array([[value]])
     new_consumption_scaled = scaler.transform(new_consumption)
 
     # Predict the unit cost
     predicted_cost = loaded_model.predict(new_consumption_scaled)
-    
-    print(f'Predicted Unit Cost for {value} kWh: {predicted_cost[0]}')
+
+    print(f'Predicted Unit Cost for {new_consumption[0][0]} kWh: {predicted_cost[0]}')
     return predicted_cost[0]
-
-# Example usage:
-def predict(value):
-    # Load and preprocess data
-    X_train_scaled, X_test_scaled, y_train, y_test, scaler = load_and_preprocess_data()
-
-    # Train and save the model
-    train_and_save_model(X_train_scaled, y_train)
-
-    # Predict for a new value
-    predicted_cost = load_model_and_predict(value, scaler=scaler)

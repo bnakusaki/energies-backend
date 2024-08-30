@@ -8,12 +8,17 @@ from . import model  # Assuming model is a module in the same directory
 def index(request):
     if request.method == 'POST':
         try:
+            print('Prediction called')
             # Parse the JSON body of the request
             data = json.loads(request.body)
             number = float(data.get('number'))
 
             # Call the predict function with the extracted number
+            print('number')
+            print(number)
             prediction = model.predict(number)
+            print('prediction')
+            print(prediction)
 
             # Return the prediction as a JSON response
             return JsonResponse({'prediction': prediction})
